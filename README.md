@@ -21,6 +21,8 @@ EXAMPLES:
       
 
 In order to create single exe file run:
+
 	C:\Python27>Scripts\pyinstaller.exe --onefile dss-tools.py
 And try it:
+
 	C:\Python27>dist\dss-tools.exe -h
