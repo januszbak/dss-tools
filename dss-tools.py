@@ -356,11 +356,11 @@ def stop_cluster():
 
         state = send_cli_via_ssh(node, 'cluster_status --get').strip()
 
-        if 'DISABLED' in state:
+        if state in ('STARTED_INACTIVE', 'DISABLED', 'VALIDATING'):
             print 'Cluster was stopped already.'
             return
 
-        if state in ('STARTED_RUNNING', 'DEGREDED', 'STARTED_INACTIVE'):
+        if state in ('STARTED_RUNNING', 'DEGREDED'):
             print 'Cluster is stopping. ',
             send_cli_via_ssh(node, 'cluster_stop --now')
             n = 120
