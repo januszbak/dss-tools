@@ -7,7 +7,7 @@ EXAMPLES:
 	dss-tools stop-cluster 192.168.0.220 192.168.0.221
 2. Graceful cluster stop and shutdown with non default password and port
 
- dss-tools --pswd password --port 22225 stop-cluster 192.168.0.220 192.168.0.221
+	dss-tools --pswd password --port 22225 stop-cluster 192.168.0.220 192.168.0.221
 3. Start cluster with default password and port
 
 	dss-tools start-cluster 192.168.0.220 192.168.0.221
@@ -27,7 +27,7 @@ EXAMPLES:
 
 	dss-tools set-ip 192.168.0.220 --new-ip eth1:10.10.10.220
 
-      
+
 
 In order to create single exe file run:
 
