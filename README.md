@@ -1,6 +1,6 @@
 # dss-tools
-<b>Graceful cluster shutdown and other commands to control DSS V7 remotely<b>
-
+<b>Graceful cluster shutdown and other commands to control DSS V7 remotely
+</b><br>
 EXAMPLES
 <br>1. Graceful cluster stop and shutdown using default password and port
 
