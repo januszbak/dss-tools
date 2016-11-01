@@ -1,5 +1,8 @@
+<style>
+body {background-color: powderblue;}
+</style>
 # dss-tools
-<body style="background-color:powderblue;">
+
 <b>Graceful cluster shutdown and other commands to control DSS V7 remotely</b>
 <br>
 
