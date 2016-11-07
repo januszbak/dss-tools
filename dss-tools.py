@@ -176,7 +176,12 @@ def send_cli_via_ssh(node_ip_address, command):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(node_ip_address, port=cli_port, username='api', password= cli_password )
+            ssh.connect(
+                node_ip_address,
+                port=cli_port,
+                username='api',
+                password= cli_password
+            )
             break
         except paramiko.AuthenticationException:
             print 'Authentication failed: %s' % node_ip_address
@@ -356,7 +361,7 @@ def stop_cluster():
 
         state = send_cli_via_ssh(node, 'cluster_status --get').strip()
 
-        if state in ('STARTED_INACTIVE', 'DISABLED', 'VALIDATING'):
+        if state in ('STARTED_INACTIVE', 'DISABLED'):
             print 'Cluster was stopped already.'
             return
 
@@ -432,7 +437,7 @@ def start_volume_replication_tasks():
                                  'task --start %s %s' % (task_type, task_name))
                 n = 60
                 while n > 0:
-                    print '.', 
+                    print '.',
                     time.sleep(1)
                     n -= 1
                     tmp_tasks = send_cli_via_ssh(node, 'task --list').split()
@@ -489,9 +494,9 @@ def main() :
 
 
 if __name__ == '__main__':
-    
+
     patch_crypto_be_discovery()
-    
+
     try:
         main()
     except KeyboardInterrupt:
