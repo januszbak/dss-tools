@@ -6,7 +6,7 @@ C:\Python27>Scripts\pyinstaller.exe --onefile dss-tools.py
 And try it:
 C:\Python27>dist\dss-tools.exe -h
 """
-
+from __future__ import print_function
 import sys
 import time
 import logging
@@ -27,6 +27,14 @@ cli_password = ''
 action = ''
 delay = 0
 nodes = []
+
+
+def time_stamp():
+    return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def print_with_timestamp(msg):
+    print('{}  {}'.format(time_stamp(), msg))
 
 
 def valid_ip(address):
@@ -149,18 +157,18 @@ def get_args():
     # validate ip-addr
     for ip in nodes :
         if not valid_ip(ip) :
-            print 'IP address %s is invalid' % ip
+            print( 'IP address {} is invalid'.format(ip))
             sys.exit(1)
 
     # detect doubles
     doubles = [ip for ip, c in collections.Counter(nodes).items() if c > 1]
     if doubles:
-        print 'Double IP address: %s' % ', '.join(doubles)
+        print( 'Double IP address: {}'.format(', '.join(doubles)))
         sys.exit(1)
 
     # validate port
     if not 1024 <= args.port <= 65535:
-        print 'Port %s is out of allowed range 1024..65535' % port
+        print( 'Port {} is out of allowed range 1024..65535'.format(port))
         sys.exit(1)
 
 
@@ -184,16 +192,16 @@ def send_cli_via_ssh(node_ip_address, command):
             )
             break
         except paramiko.AuthenticationException:
-            print 'Authentication failed: %s' % node_ip_address
+            print_with_timestamp( 'Authentication failed: {}'.format(node_ip_address))
             sys.exit(1)
         except:
-            print 'Waiting for: %s' % node_ip_address
+            print_with_timestamp( 'Waiting for: {}'.format(node_ip_address))
             counter += 1
             time.sleep(5)
 
         # Connection timed out
         if counter == repeat:
-            print 'Connection timed out: %s' % node_ip_address
+            print_with_timestamp( 'Connection timed out: {}'.format(node_ip_address))
             sys.exit(1)
 
     stdin, stdout, stderr = ssh.exec_command(command)
@@ -207,13 +215,13 @@ def test_cli_version():
     for node in nodes:
         dss_cli_api_version = int(send_cli_via_ssh(node, 'version').strip())
         if dss_cli_api_version < MIN_DSS_CLI_API_VERSION:
-            print 'CLI/API version 4 or newer is required: %s' % node
+            print( 'CLI/API version 4 or newer is required: {}'.format(node))
             sys.exit(1)
 
 
 def display_delay(msg):
     for sec in range(delay, 0, -1) :
-        print '%s in %s seconds \r' % (msg,sec),
+        print( '{} in {} seconds \r'.format(msg,sec))
         time.sleep(1)
 
 
@@ -221,14 +229,14 @@ def shutdown_nodes():
     display_delay('Shutdown')
     for node in nodes:
         send_cli_via_ssh(node, 'shutdown')
-        print 'Shutdown: %s' % node
+        print_with_timestamp( 'Shutdown: {}'.format(node))
 
 
 def reboot_nodes() :
     display_delay('Reboot')
     for node in nodes:
         send_cli_via_ssh(node, 'reboot')
-        print 'Reboot: %s' % node
+        print_with_timestamp( 'Reboot: {}'.format(node))
 
 
 def create_volume_group() :
@@ -241,29 +249,29 @@ def create_volume_group() :
         volume_group_status = \
             send_cli_via_ssh(node, 'volume_group_status').strip()
         if volume_group_status:
-            print 'Volume group on %s already exist: %s' % (
+            print( 'Volume group on {} already exist: {}'.format(
                 node,
                 ' '.join([line.split(';')[0] for line in
                           volume_group_status.split()])
-            )
+            ))
             volume_group_present = True
         else:
-            print 'Creating vg00 on: ', node
+            print_with_timestamp( 'Creating vg00 on: {}'.format(node))
             send_cli_via_ssh(node, 'unit_manager create S001 vg00')
             volume_group_status = \
                 send_cli_via_ssh(node, 'volume_group_status').strip()
             if volume_group_status:
-                print 'Created vg00 on: ', node
+                print_with_timestamp( 'Created vg00 on: {}'.format(node))
                 volume_group_present = True
             else :
-                print 'Cannot create vg00 on: ', node
+                print_with_timestamp( 'Cannot create vg00 on: [}'.format(node))
                 volume_group_present = False
     return volume_group_present
 
 
 def print_nic_settings(node):
     nic_details = send_cli_via_ssh(node, 'get_nicslist --verbose').strip()
-    print '\nNIC details:\n%s' % nic_details
+    print( '\nNIC details:\n{}'.format(nic_details))
 
 
 def set_ip():
@@ -279,7 +287,7 @@ def set_ip():
     if len(new_ip.split(':')) == 2:
         given_nic, given_ip = new_ip.split(':')
     else:
-        print 'Wrong argument %s' % new_ip
+        print( 'Wrong argument {}'.format(new_ip))
         sys.exit(1)
 
     for nic, ip in current_nic_ip_list :
@@ -288,26 +296,26 @@ def set_ip():
             continue
 
         if ip == node and nic == given_nic:  # want to change SSH accessed NIC
-            print 'Cannot change NIC-setting used for CLI access: %s:%s' % (
+            print( 'Cannot change NIC-setting used for CLI access: {}:{}'.format(
                 given_nic, given_ip
-            )
+            ))
             print_nic_settings(node)
             sys.exit(1)
 
         if ip == given_ip :                   ## same IP , do nothing
-            print 'Given IP %s:%s is the same as current IP' % (
+            print( 'Given IP {}:{} is the same as current IP'.format(
                 given_nic, given_ip
-            )
+            ))
             print_nic_settings(node)
             sys.exit(1)
 
-        print 'Node %s, setting %s:%s' % (node, given_nic, given_ip)
+        print_with_timestamp( 'Node {}, setting {}:{}'.format(node, given_nic, given_ip))
         # fixed netmask 24 (255.255.255.0):
-        send_cli_via_ssh(node, 'set_nic %s %s 24' % (given_nic, given_ip))
+        send_cli_via_ssh(node, 'set_nic {} {} 24'.format(given_nic, given_ip))
         done = True
 
     if not done:
-        print 'Node %s, NIC %s does not exist ' % (node, given_nic)
+        print_with_timestamp( 'Node {}, NIC {} does not exist '.format(node, given_nic))
 
     print_nic_settings(node)
 
@@ -316,9 +324,9 @@ def wait_for_nodes():
 
     for node in nodes :
         if 'working' in send_cli_via_ssh(node, 'test'):
-            print 'Node %s is running.' % node
+            print_with_timestamp( 'Node {} is running.'.format(node))
         else:
-            print 'Node %s is NOT available.' % node
+            print_with_timestamp( 'Node {} is NOT available.'.format(node))
 
 
 def start_cluster():
@@ -329,28 +337,29 @@ def start_cluster():
 
         state = send_cli_via_ssh(node, 'cluster_status --get').strip()
         if state in ('STARTED_RUNNING', 'DEGREDED'):
-            print 'Cluster was started allready.'
+            print_with_timestamp( 'Cluster was started allready.')
             return
         time.sleep(1)
-        print '\nStarting cluster. ',
+        print('\nStarting cluster.',end=' ')
         send_cli_via_ssh(node, 'cluster_start --global')
         n = 300
         while n > 0:
-            print '.',
+            print('.', end = ' ') 
             time.sleep(1)
             n -= 1
             state = send_cli_via_ssh(node, 'cluster_status --get')
             if 'STARTED_RUNNING' in state:
-                print '\nCluster started.\n'
+                print()
+                print_with_timestamp('Cluster started.\n')
                 n = -1
             if 'DEGREDED' in state:
-                print '\n\nCluster started in degreded mode.'
+                print_with_timestamp( '\n\nCluster started in degreded mode.')
                 n = -1
         if n == -1:
             break
 
     if n != -1:
-        print '\n\nUnable to start the cluster.'
+        print_with_timestamp( '\n\nUnable to start the cluster.')
 
 
 def stop_cluster():
@@ -362,26 +371,27 @@ def stop_cluster():
         state = send_cli_via_ssh(node, 'cluster_status --get').strip()
 
         if state in ('STARTED_INACTIVE', 'DISABLED'):
-            print 'Cluster was stopped already.'
+            print_with_timestamp( 'Cluster was stopped already.')
             return
 
         if state in ('STARTED_RUNNING', 'DEGREDED'):
-            print 'Cluster is stopping. ',
+            print('Cluster is stopping.', end=' ')
             send_cli_via_ssh(node, 'cluster_stop --now')
             n = 120
             while n > 0:
-                print '.',
+                print('.', end=' ')
                 time.sleep(1)
                 n -= 1
                 state = send_cli_via_ssh(node , 'cluster_status --get')
                 if 'DISABLED' in state:
                     n = 0
-                    print '\nCluster stopped.\n'
+                    print()
+                    print_with_timestamp( 'Cluster stopped.\n')
             if n == 0:
                 break
 
     if 'STARTED_RUNNING' in state:
-        print '\n\nUnable to stop the cluster'
+        print_with_timestamp( '\n\nUnable to stop the cluster')
 
 
 def start_volume_replication_tasks():
@@ -426,35 +436,36 @@ def start_volume_replication_tasks():
                 continue
 
             if 'running' in task_state:
-                print 'Node %s, task %s is running' % (node, task_name)
+                print_with_timestamp( 'Node {}, task {} is running'.format(node, task_name))
                 continue
 
             if 'stopped' in task_state:
-                print 'Node %s, starting volume replication task: %s' % (
+                print_with_timestamp( 'Node {}, starting volume replication task: {}'.format(
                     node, task_name
-                )
+                ))
                 send_cli_via_ssh(node,
-                                 'task --start %s %s' % (task_type, task_name))
+                                 'task --start {} {}'.format(task_type, task_name))
                 n = 60
                 while n > 0:
-                    print '.',
+                    print('.', end=' ')
                     time.sleep(1)
                     n -= 1
                     tmp_tasks = send_cli_via_ssh(node, 'task --list').split()
                     for tmp_task in tmp_tasks:
                         if 'running' in tmp_task:
-                            print '\rNode %s, task %s started.' % (
+                            print_with_timestamp( '\nNode {}, task {} started.'.format(
                                 node, task_name
-                            )
+                            ))
                             n = 0
 
     if both_secondary_mode_volumes:
-        for vol in both_secondary_mode_volumes:
-            print 'Volume %s, task %s is set to "Secondary" mode on both nodes' % vol
-        print 'It is NOT possible to auto-start tasks and cluster. Manual start via GUI is required.'
-        print 'It is nessesary to check which node was last in service and has most recent data.'
-        print 'Volumes with most recent data need to be set to "Source" mode.'
+        for vol,task in both_secondary_mode_volumes:
+            print_with_timestamp('Volume {}, task {} is set to Secondary mode on both nodes'.format(vol,task))
+        print('\nIt is NOT possible to auto-start tasks and cluster. Manual start via GUI is required.')
+        print('It is nessesary to check which node was last in service and has most recent data.')
+        print('Volumes with most recent data need to be set to "Source" mode.\n')
         sys.exit(1)
+
 
 
 def main() :
@@ -483,14 +494,12 @@ def main() :
         for counter in range(1, 101):
             stop_cluster()
             reboot_nodes()
-            print 'Please wait ...'
+            print( 'Please wait ...')
             time.sleep(60)
             wait_for_nodes()
             start_volume_replication_tasks()
             start_cluster()
-            print '%s PASS, %s\n' % (
-                counter, time.strftime("%Y-%m-%d %H:%M:%S")
-            )
+            print_with_timestamp('{} PASS\n'.format(counter))
 
 
 if __name__ == '__main__':
@@ -500,5 +509,5 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print 'Interrupted             '
+        print_with_timestamp( 'Interrupted             ')
         sys.exit(0)
