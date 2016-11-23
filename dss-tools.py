@@ -221,7 +221,7 @@ def test_cli_version():
 
 def display_delay(msg):
     for sec in range(delay, 0, -1) :
-        print( '{} in {} seconds \r'.format(msg,sec))
+        print( '{} in {:>2} seconds \r'.format(msg,sec))
         time.sleep(1)
 
 
@@ -456,6 +456,7 @@ def start_volume_replication_tasks():
                     tmp_tasks = send_cli_via_ssh(node, 'task --list').split()
                     for tmp_task in tmp_tasks:
                         if 'running' in tmp_task:
+                            print()
                             print_with_timestamp( 'Node {}, task {} started.'.format(
                                 node, task_name
                             ))
