@@ -337,7 +337,7 @@ def start_cluster():
 
         state = send_cli_via_ssh(node, 'cluster_status --get').strip()
         if state in ('STARTED_RUNNING', 'DEGREDED'):
-            print_with_timestamp( 'Cluster was started allready.')
+            print_with_timestamp('Cluster was started allready.')
             return
         time.sleep(1)
         print('\nStarting cluster.',end=' ')
@@ -353,13 +353,15 @@ def start_cluster():
                 print_with_timestamp('Cluster started.\n')
                 n = -1
             if 'DEGREDED' in state:
-                print_with_timestamp( '\n\nCluster started in degreded mode.')
+                print()
+                print_with_timestamp( 'Cluster started in degreded mode.')
                 n = -1
         if n == -1:
             break
 
     if n != -1:
-        print_with_timestamp( '\n\nUnable to start the cluster.')
+        print()
+        print_with_timestamp( 'Unable to start the cluster.')
 
 
 def stop_cluster():
@@ -391,7 +393,8 @@ def stop_cluster():
                 break
 
     if 'STARTED_RUNNING' in state:
-        print_with_timestamp( '\n\nUnable to stop the cluster')
+        print()
+        print_with_timestamp('Unable to stop the cluster')
 
 
 def start_volume_replication_tasks():
@@ -453,7 +456,7 @@ def start_volume_replication_tasks():
                     tmp_tasks = send_cli_via_ssh(node, 'task --list').split()
                     for tmp_task in tmp_tasks:
                         if 'running' in tmp_task:
-                            print_with_timestamp( '\nNode {}, task {} started.'.format(
+                            print_with_timestamp( 'Node {}, task {} started.'.format(
                                 node, task_name
                             ))
                             n = 0
