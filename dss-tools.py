@@ -5,6 +5,10 @@ In order to create single exe file run:
 C:\Python27>Scripts\pyinstaller.exe --onefile dss-tools.py
 And try it:
 C:\Python27>dist\dss-tools.exe -h
+
+NOTE:
+In case of error: "msvcr100.dll missing ..."
+please download and install Microsoft Visual C++ 2010 Redistributable Package (x86) vcredist_x86.exe
 """
 from __future__ import print_function
 import sys
