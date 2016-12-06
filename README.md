@@ -39,3 +39,6 @@ EXAMPLES:
 And try it:
 
 	C:\Python27>dist\dss-tools.exe -h
+NOTE:
+In case of error: "msvcr100.dll missing ...",
+download and install: Microsoft Visual C++ 2010 Redistributable Package (x86) vcredist_x86.exe
