@@ -2,6 +2,9 @@
 # dss-tools
 
 <b>Graceful cluster shutdown and other commands to control DSS V7 remotely</b>
+<br>Note: 
+Please enable the CLI/API in GUI : 
+Setup -> Administrator setting -> CLI/API Configuration
 <br>
 
 EXAMPLES:
